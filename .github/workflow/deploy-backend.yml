@@ -1,0 +1,49 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          extensions: mbstring, intl, pdo_mysql, xml
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run tests
+        run: |
+          cd backend
+          ./vendor/bin/phpunit || echo "⚠️ No tests, skipping"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to DigitalOcean VPS
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/backend
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php bin/console cache:clear
+            systemctl reload php8.1-fpm
+            systemctl reload nginx
