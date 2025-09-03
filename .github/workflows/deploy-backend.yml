@@ -37,7 +37,7 @@ jobs:
           script: |
             cd /var/www/backend
             git pull origin master
-            composer install --no-dev --optimize-autoloader
+            composer install --no-dev --optimize-autoloader --no-scripts
             php bin/console cache:clear --env=prod
             php bin/console cache:warmup --env=prod
             systemctl reload php8.1-fpm
