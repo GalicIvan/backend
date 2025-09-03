@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --no-interaction --prefer-dist --no-progress
+            composer install --no-dev --optimize-autoloader --no-scripts
 
   deploy:
     runs-on: ubuntu-latest
