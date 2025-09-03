@@ -16,6 +16,7 @@ class ChuckController extends AbstractController
         $this->client = $client;
     }
 
+    
     #[Route('/api/chuck', name: 'api_chuck', methods: ['GET'])]
     public function index(): JsonResponse
     {
