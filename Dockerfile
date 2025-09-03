@@ -1,19 +1,16 @@
-FROM php:8.2-fpm
+FROM php:8.1-cli
 
 RUN apt-get update && apt-get install -y \
-    git unzip libicu-dev libpq-dev libzip-dev zip \
-    && docker-php-ext-install intl pdo pdo_mysql opcache zip
+    git unzip libicu-dev libxml2-dev libzip-dev \
+    && docker-php-ext-install intl pdo pdo_mysql zip opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/html
+WORKDIR /app
+COPY . /app
 
-COPY . .
+ENV APP_ENV=dev
 
-RUN composer install --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
-RUN chown -R www-data:www-data var
-
-EXPOSE 9000
-
-CMD ["php-fpm"]
+CMD ["php", "-S", "0.0.0.0:8001", "-t", "public"]
